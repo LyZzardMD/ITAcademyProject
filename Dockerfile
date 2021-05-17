@@ -50,10 +50,6 @@ WORKDIR /var/www/html
 # Install composer from the official image
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
-# configure root user
-RUN usermod --password "`openssl passwd root`" root
-RUN sed -i -e 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
-
 # install src
 COPY . /var/www/html
 
