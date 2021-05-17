@@ -1,4 +1,4 @@
-FROM debian:9-slim
+FROM php:7.4-fpm
 
 # set the environment variables
 ENV EVENTS noninteractive
@@ -6,9 +6,23 @@ ENV TERM dumb
 
 USER root
 
-# install utilities
-RUN apt-get clean && apt-get update && \
-		apt-get -y install curl wget vim git mc screen net-tools nano
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    locales \
+    zip \
+    jpegoptim optipng pngquant gifsicle \
+    vim \
+    unzip \
+    git \
+    curl \
+    nano \
+    git \
+    screen \
+    net-tools
 
 # install generic services
 RUN apt-get -y install openssh-server
@@ -17,22 +31,9 @@ RUN apt-get -y install openssh-server
 RUN usermod --password "`openssl passwd root`" root
 RUN sed -i -e 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
 
-# install nginx
-RUN apt-get -y install nginx
-COPY ./.docker/settings/nginx.default /etc/nginx/sites-available/default
-
 # install database packages
 RUN apt-get -y install mariadb-client
 
-# install php
-RUN apt install -y apt-transport-https lsb-release ca-certificates
-RUN wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
-RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
-RUN apt update
-
-RUN apt install -y php7.4 php7.4-cli php7.4-common php7.4-curl php7.4-dev php7.4-gd \
-    php7.4-json php7.4-memcached php7.4-mysql php7.4-readline \
-    php7.4-mbstring php7.4-dom php7.4-zip php7.4-bcmath php7.4-fpm
 COPY ./.docker/settings/cli.php.ini    /etc/php/7.4/cli/php.ini
 COPY ./.docker/settings/fpm.php.ini    /etc/php/7.4/fpm/php.ini
 
@@ -50,8 +51,17 @@ WORKDIR /var/www/html
 # Install composer from the official image
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
-# install src
-COPY . /var/www/html
+
+# Add user for laravel application
+RUN groupadd -g 1000 www
+RUN useradd -u 1000 -ms /bin/bash -g www www
+
+# Copy existing application directory contents
+COPY . /var/www
+
+# Copy existing application directory permissions
+COPY --chown=www:www . /var/www
+
 
 # install the runables
 COPY ./.docker/runables/deploy.sh /opt/deploy.sh
@@ -61,4 +71,10 @@ RUN chmod +x /opt/deploy.sh
 
 # start command
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]
+
+# Change current user to www
+USER www
+
+# Expose port 9000 and start php-fpm server
+EXPOSE 9000
+CMD ["php-fpm"]
