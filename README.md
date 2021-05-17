@@ -1,6 +1,4 @@
-<<<<<<< HEAD
 # PHP project with Docker
-
 
 
 ### How to start
@@ -42,10 +40,3 @@ You could create your script.sh that would rebuild the container. The content of
                 amoraresco/it-academy-project:latest \
 
 
-=======
-My homework for Bootcamp
-
-
-To load the project, please make a copy of .env.example and name it .env
-Make sure to put valid credentials.
->>>>>>> 9233b0f51b337dceb2a792eaa9a18f7064e4fc0e
