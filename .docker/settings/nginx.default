@@ -1,0 +1,23 @@
+server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
+
+	root /var/www/html/public;
+
+    client_max_body_size 10m;
+    
+    index index.php index.html;
+
+    location / {
+        if (!-f $request_filename) {
+            rewrite ^ /index.php?$1;
+        }
+        try_files $uri $uri/ =404;
+    }
+
+    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php7.4-fpm.sock;
+    }
+}
