@@ -14,17 +14,32 @@ services:
       - project-network
     restart: unless-stopped
 
-  project-api:
-    image: amoraresco/it-academy-project:latest
-    container_name: project-api
+  project-webserver:
+    image: nginx:alpine
+    container_name: project-webserver
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "880:80"
+      - "8843:443"
+    volumes:
+      - "/home/andrian/bootcamp/myProject/:/var/www"
+      - "/home/containers/project/docker-compose/nginx/conf.d/:/etc/nginx/conf.d/"
+    networks:
+      - project-network
+
+  project-app:
+    image: amoraresco/it-academy-project:1.2
+    container_name: project-app
     links:
       - project-db
       - project-redis
     ports:
-      - "880:80"
+      - "9000:9000"
       - "882:22"
+    working_dir: /var/www/html
     volumes:
-      - "/home/andrian/bootcamp/myProject:/var/www/html"
+      - "/home/andrian/bootcamp/myProject:/var/www"
     environment:
       - APP_URL=http://myproject.com
       - MAIL_HOST=project-mailhog
