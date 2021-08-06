@@ -41,6 +41,10 @@ COPY ./.docker/settings/fpm.php.ini    /etc/php/7.4/fpm/php.ini
 COPY ./.docker/settings/fpm.www.conf /etc/php7/php-fpm.d/www.conf
 #COPY ./.docker/settings/php.ini /etc/php7/conf.d/custom.ini
 
+# Install Node
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
+RUN apt-get install -y nodejs
+
 # Setup document root
 RUN mkdir -p /var/www/html
 #RUN php -v
