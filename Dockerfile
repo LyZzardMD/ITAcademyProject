@@ -22,7 +22,11 @@ RUN apt-get update && apt-get install -y \
     nano \
     git \
     screen \
-    net-tools
+    net-tools \
+    mariadb-client 
+
+RUN docker-php-ext-install mysqli && \
+    docker-php-ext-install pdo_mysql
 
 # install generic services
 RUN apt-get -y install openssh-server
@@ -30,9 +34,6 @@ RUN apt-get -y install openssh-server
 # configure root user
 RUN usermod --password "`openssl passwd root`" root
 RUN sed -i -e 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
-
-# install database packages
-RUN apt-get -y install mariadb-client
 
 COPY ./.docker/settings/cli.php.ini    /etc/php/7.4/cli/php.ini
 COPY ./.docker/settings/fpm.php.ini    /etc/php/7.4/fpm/php.ini
@@ -46,11 +47,11 @@ RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt-get install -y nodejs
 
 # Setup document root
-RUN mkdir -p /var/www/html
+RUN mkdir -p /var/www
 #RUN php -v
 
 # Add application
-WORKDIR /var/www/html
+WORKDIR /var/www
 
 # Install composer from the official image
 COPY --from=composer /usr/bin/composer /usr/bin/composer
