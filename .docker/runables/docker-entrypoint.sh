@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # switch base dir
-cd /var/www/html
+cd /var/www
 
 # start services
 echo -e "Starting main services.."
-service ssh start
-service php7.4-fpm start
+sudo service ssh start
+sudo service php7.4-fpm start
 
 # dockerhost in hosts
 echo -e "Add dockerhost in hosts file.."

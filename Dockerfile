@@ -2,7 +2,7 @@ FROM php:7.4-fpm
 
 # set the environment variables
 ENV EVENTS noninteractive
-ENV TERM dumb
+ENV TERM xterm
 
 USER root
 
@@ -23,7 +23,8 @@ RUN apt-get update && apt-get install -y \
     git \
     screen \
     net-tools \
-    mariadb-client 
+    mariadb-client \
+    sudo 
 
 RUN docker-php-ext-install mysqli && \
     docker-php-ext-install pdo_mysql
@@ -61,12 +62,20 @@ COPY --from=composer /usr/bin/composer /usr/bin/composer
 RUN groupadd -g 1000 www
 RUN useradd -u 1000 -ms /bin/bash -g www www
 
+#  Add new user docker to sudo group
+RUN adduser www sudo
+
+# Ensure sudo group users are not 
+# asked for a password when using 
+# sudo command by ammending sudoers file
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> \
+/etc/sudoers
+
 # Copy existing application directory contents
 COPY . /var/www
 
 # Copy existing application directory permissions
 COPY --chown=www:www . /var/www
-
 
 # install the runables
 COPY ./.docker/runables/deploy.sh /opt/deploy.sh
